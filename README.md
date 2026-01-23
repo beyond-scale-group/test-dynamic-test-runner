@@ -1,23 +1,3 @@
-# test-dynamic-test-runner
+# Test Repo
 
-Integration test repository for the dynamic-test-runner GitHub Action.
-
-## Structure
-
-```
-packages/
-├── api/
-│   ├── src/index.ts
-│   └── test-config.json
-├── web/
-│   ├── src/App.tsx
-│   └── test-config.json
-└── shared/
-    ├── src/utils.ts
-    └── test-config.json
-```
-
-## Usage
-
-Tests are triggered via `workflow_dispatch` from the main repository.
-
+DTR-005 test: 1769178424583
