@@ -1,0 +1,1 @@
+{"name":"java-service","type":"java","setup":[{"uses":"actions/setup-java@v4","with":{"distribution":"temurin","java-version":"17"}}],"stepDependencies":"mvn install -DskipTests","stepTest":"mvn test"}
