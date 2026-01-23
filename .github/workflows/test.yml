@@ -12,6 +12,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   detect:
     runs-on: ubuntu-latest
@@ -27,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: beyond-scale-group/bsg-claude-plugins
-          token: ${{ secrets.GH_TOKEN_FULL_BSG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: .github/actions/bsg-plugins
           sparse-checkout: github-actions/dynamic-test-runner
       
