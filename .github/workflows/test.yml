@@ -1,0 +1,49 @@
+name: Test Dynamic Test Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_case:
+        description: 'Test case ID (e.g., DTR-001)'
+        required: true
+        type: string
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Detect changed projects
+        id: detect
+        uses: beyond-scale-group/bsg-claude-plugins/github-actions/dynamic-test-runner@main
+        with:
+          config-pattern: '**/test-config.json'
+
+  test:
+    needs: detect
+    if: needs.detect.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup project
+        run: |
+          cd ${{ matrix.project.path }}
+          if [ -f "package.json" ]; then npm install; fi
+          
+      - name: Run tests
+        run: |
+          cd ${{ matrix.project.path }}
+          ${{ matrix.project.test }}
