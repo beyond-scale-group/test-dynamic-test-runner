@@ -5,7 +5,7 @@ on:
     inputs:
       test_case:
         description: 'Test case ID (e.g., DTR-001)'
-        required: true
+        required: false
         type: string
   pull_request:
     branches: [main]
@@ -17,33 +17,43 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
+      has-changes: ${{ steps.detect.outputs.has-changes }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
+      - name: Checkout action repo
+        uses: actions/checkout@v4
+        with:
+          repository: beyond-scale-group/bsg-claude-plugins
+          token: ${{ secrets.GH_TOKEN_FULL_BSG }}
+          path: .github/actions/bsg-plugins
+          sparse-checkout: github-actions/dynamic-test-runner
+      
       - name: Detect changed projects
         id: detect
-        uses: beyond-scale-group/bsg-claude-plugins/github-actions/dynamic-test-runner@main
+        uses: ./.github/actions/bsg-plugins/github-actions/dynamic-test-runner
         with:
           config-pattern: '**/test-config.json'
 
   test:
     needs: detect
-    if: needs.detect.outputs.matrix != '[]'
+    if: needs.detect.outputs.has-changes == 'true'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        project: ${{ fromJson(needs.detect.outputs.matrix) }}
+        include: ${{ fromJson(needs.detect.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       
       - name: Setup project
         run: |
-          cd ${{ matrix.project.path }}
+          cd ${{ matrix.projectPath }}
           if [ -f "package.json" ]; then npm install; fi
           
       - name: Run tests
         run: |
-          cd ${{ matrix.project.path }}
-          ${{ matrix.project.test }}
+          cd ${{ matrix.projectPath }}
+          ${{ matrix.stepTest }}
